@@ -36,6 +36,8 @@ def get_student_by_github(github):
     print("Student: {} {}\nGitHub account: {}".format(row[0], row[1], row[2]))
 
 
+
+
 def make_new_student(first_name, last_name, github):
     """Add a new student and print confirmation.
 
@@ -53,22 +55,70 @@ def make_new_student(first_name, last_name, github):
 
     db.session.commit()
 
-    print(f"Successfully added student: {first_name} {last_name}")
+    # print(f"Successfully added student: {first_name} {last_name}")
 
 
 def get_project_by_title(title):
     """Given a project title, print information about the project."""
-    pass
+    QUERY = """
+        SELECT description FROM projects WHERE title = :title
+    """
+
+    db_cursor = db.session.execute(QUERY, {'title': title})
+
+    row = db_cursor.fetchone()
+
+    print("Description: {}".format(row[0]))
+
+
 
 
 def get_grade_by_github_title(github, title):
     """Print grade student received for a project."""
-    pass
+    QUERY = """
+        SELECT grade 
+        FROM grades
+        WHERE student_github = :github AND project_title = :title
+    """
+
+    db_cursor = db.session.execute(QUERY, {'github': github, 'title': title})
+
+    row = db_cursor.fetchone()
+
+    print("Grade: {}".format(row[0]))
+
+
 
 
 def assign_grade(github, title, grade):
     """Assign a student a grade on an assignment and print a confirmation."""
-    pass
+    QUERY = """
+        INSERT INTO grades (student_github, project_title, grade)
+        VALUES (:student_github, :project_title, :grade)
+    """
+
+    db.session.execute(QUERY, {'student_github': github,
+                               'project_title': title,
+                               'grade': grade})
+
+    db.session.commit()
+
+    print(f"Successfully assigned new grade: {grade}")
+
+    
+    # QUERY = """
+    #     INSERT INTO grades (grade)
+    #     VALUES (:grade)
+    #     WHERE student_github = :github AND project_title = :title
+    # """
+
+    # db.session.execute(QUERY, {'studen_github': github,
+    #                            'project_title': title,
+    #                            'grade': grade})
+
+    # db.session.commit()
+
+    # print(f"Successfully assigned new grade: {grade}")
 
 
 def handle_input():
