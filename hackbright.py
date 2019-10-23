@@ -87,8 +87,31 @@ def get_grade_by_github_title(github, title):
 
     print("Grade: {}".format(row[0]))
 
+def add_project(title, description, max_grade):
+    QUERY = """
+        INSERT INTO projects (title, description, max_grade)
+        VALUES (:title, :description, :max_grade)
+    """
 
+    db.session.execute(QUERY, {'title': title,
+                               'description': description,
+                               'max_grade': max_grade})
 
+    db.session.commit()
+
+def get_all_grades(student_github):
+    QUERY = """
+        SELECT grade, project_title
+        FROM grades
+        WHERE student_github = :student_github
+    """
+
+    db_cursor = db.session.execute(QUERY, {'student_github': student_github})
+
+    row = db_cursor.fetchall()
+
+    for idx, item in enumerate(row):
+        print("Grade: {}. Project: {}".format(row[idx][0], row[idx][1]))
 
 def assign_grade(github, title, grade):
     """Assign a student a grade on an assignment and print a confirmation."""
@@ -106,7 +129,7 @@ def assign_grade(github, title, grade):
     print(f"Successfully assigned new grade: {grade}")
 
     #Alternative way to update the grade
-    
+
     # QUERY = """
     #     UPDATE grades 
     #     SET grade = :grade 
@@ -153,7 +176,7 @@ def handle_input():
 if __name__ == "__main__":
     connect_to_db(app)
 
-    handle_input()
+    # handle_input()
 
     # To be tidy, we close our database connection -- though,
     # since this is where our program ends, we'd quit anyway.
