@@ -105,15 +105,16 @@ def assign_grade(github, title, grade):
 
     print(f"Successfully assigned new grade: {grade}")
 
+    #Alternative way to update the grade
     
     # QUERY = """
-    #     INSERT INTO grades (grade)
-    #     VALUES (:grade)
+    #     UPDATE grades 
+    #     SET grade = :grade 
     #     WHERE student_github = :github AND project_title = :title
     # """
 
-    # db.session.execute(QUERY, {'studen_github': github,
-    #                            'project_title': title,
+    # db.session.execute(QUERY, {'github': github,
+    #                            'title': title,
     #                            'grade': grade})
 
     # db.session.commit()
