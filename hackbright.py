@@ -19,23 +19,36 @@ def connect_to_db(app):
     db.app = app
     db.init_app(app)
 
-
-def get_student_by_github(github):
-    """Given a GitHub account name, print info about the matching student."""
-
+# Helper function
+def does_student_exist(input_github):
     QUERY = """
         SELECT first_name, last_name, github
         FROM students
         WHERE github = :github
-        """
-
-    db_cursor = db.session.execute(QUERY, {'github': github})
+    """
+    db_cursor = db.session.execute(QUERY, {'github': input_github})
 
     row = db_cursor.fetchone()
 
+    return row
+
+def get_student_by_github(github):
+    """Given a GitHub account name, print info about the matching student."""
+
+    # QUERY = """
+    #     SELECT first_name, last_name, github
+    #     FROM students
+    #     WHERE github = :github
+    #     """
+
+    # db_cursor = db.session.execute(QUERY, {'github': github})
+
+    # row = db_cursor.fetchone()
+
+    # Refactored code:
+    row = does_student_exist(github)
+
     print("Student: {} {}\nGitHub account: {}".format(row[0], row[1], row[2]))
-
-
 
 
 def make_new_student(first_name, last_name, github):
@@ -55,7 +68,7 @@ def make_new_student(first_name, last_name, github):
 
     db.session.commit()
 
-    # print(f"Successfully added student: {first_name} {last_name}")
+    print(f"Successfully added student: {first_name} {last_name}")
 
 
 def get_project_by_title(title):
@@ -69,8 +82,6 @@ def get_project_by_title(title):
     row = db_cursor.fetchone()
 
     print("Description: {}".format(row[0]))
-
-
 
 
 def get_grade_by_github_title(github, title):
@@ -87,7 +98,9 @@ def get_grade_by_github_title(github, title):
 
     print("Grade: {}".format(row[0]))
 
+
 def add_project(title, description, max_grade):
+    """Add new project to the projects table, given the title, description and max grade."""
     QUERY = """
         INSERT INTO projects (title, description, max_grade)
         VALUES (:title, :description, :max_grade)
@@ -99,7 +112,9 @@ def add_project(title, description, max_grade):
 
     db.session.commit()
 
+
 def get_all_grades(student_github):
+    """Prints grade and project from grades table, given student's github"""
     QUERY = """
         SELECT grade, project_title
         FROM grades
@@ -108,10 +123,11 @@ def get_all_grades(student_github):
 
     db_cursor = db.session.execute(QUERY, {'student_github': student_github})
 
-    row = db_cursor.fetchall()
+    rows = db_cursor.fetchall()
 
-    for idx, item in enumerate(row):
-        print("Grade: {}. Project: {}".format(row[idx][0], row[idx][1]))
+    for idx, item in enumerate(rows):
+        print("Grade: {}. Project: {}".format(rows[idx][0], rows[idx][1]))
+
 
 def assign_grade(github, title, grade):
     """Assign a student a grade on an assignment and print a confirmation."""
@@ -160,11 +176,14 @@ def handle_input():
         command = tokens[0]
         args = tokens[1:]
 
-        if command == "student":
+        if (command == "student" 
+            and len(args) == 1 
+            and does_student_exist(args[0])!= None):
             github = args[0]
             get_student_by_github(github)
+            
 
-        elif command == "new_student":
+        elif command == "new_student" and len(args) == 3:
             first_name, last_name, github = args  # unpack!
             make_new_student(first_name, last_name, github)
 
@@ -176,7 +195,7 @@ def handle_input():
 if __name__ == "__main__":
     connect_to_db(app)
 
-    # handle_input()
+    handle_input()
 
     # To be tidy, we close our database connection -- though,
     # since this is where our program ends, we'd quit anyway.
